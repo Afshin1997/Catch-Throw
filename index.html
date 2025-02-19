@@ -12,15 +12,13 @@
         <h1>Catch-Throw: Learning to Catch a Thrown Object</h1>
         <p><strong>Authors:</strong> Your Name, Co-Authors</p>
         <p><strong>Conference/Journal:</strong> Your Conference Name</p>
-        <a href="assets/catch-throw.pdf" class="button">📄 Download Paper (PDF)</a>
+        <!-- <a href="assets/catch-throw.pdf" class="button">📄 Download Paper (PDF)</a> -->
     </header>
 
     <section>
         <h2>Abstract</h2>
         <p>
-            This research explores reinforcement learning techniques for robotic manipulation 
-            to catch a thrown object. We present a novel approach integrating model-free RL 
-            and physics-informed constraints to improve real-world performance.
+            A key challenge in deep reinforcement learning for multi-task settings is performing long-horizon tasks consecutively and reaching the final goal through a single trained model. The objective of this research is to define multiple consecutive tasks for non-prehensile manipulation and achieve the final goal, which is hovering a thrown ball at a specific position. Separate but similar rewards are designed for each task to facilitate a smooth transition from one task to the next. The agents are trained in parallel with dynamic entropy levels, and the tasks are defined as catching, stabilizing, hovering, carrying to a target point, and hovering again. The results indicated that the agents can perform multiple tasks through one network for all the tasks and complete them consecutively to reach the final target point. This study provides new insights into multi-task training for non-prehensile manipulation and reward design to transition smoothly from one state to the next.
         </p>
     </section>
 
