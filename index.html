@@ -176,10 +176,19 @@
     <p>We employ deep reinforcement learning with the following components:</p>
     <ul>
       <li><strong>Algorithm:</strong> Proximal Policy Optimization (PPO)</li>
-      <li><strong>Network Architecture:</strong> 3-layer fully connected neural network</li>
-      <li><strong>State Space:</strong> 12-dimensional (position, velocity, orientation)</li>
+      <li><strong>Network Architecture:</strong> 1-layer lstm + 4-layer fully connected neural network</li>
+        <div id="images" class="tab-content">
+          <h3>Results & Visualizations</h3>
+          <div class="gallery">
+            <div class="gallery-item">
+              <img src="plots/policy.svg" alt="Network Structure">
+              <p>Accuracy Metrics</p>
+            </div>
+          </div>
+        </div>
+      <li><strong>State Space:</strong> 44-dimensional (position, velocity, orientation)</li>
       <li><strong>Action Space:</strong> 7-dimensional robot joint velocities</li>
-      <li><strong>Training Time:</strong> ~100,000 episodes per task</li>
+      <li><strong>Training Time:</strong> ~50,000 episodes for all the tasks</li>
     </ul>
   </div>
 
@@ -187,10 +196,10 @@
     <h3>Experimental Setup</h3>
     <ul>
       <li><strong>Robot:</strong> KUKA iiwa 7 R800 (7-DOF collaborative robot)</li>
-      <li><strong>Simulation:</strong> PyBullet physics engine</li>
-      <li><strong>Object:</strong> 0.2kg sphere with variable restitution</li>
+      <li><strong>Simulation:</strong> Isaac Sim</li>
+      <li><strong>Object:</strong> 0.054kg Deformable ball</li>
       <li><strong>Environment:</strong> ROS 2 middleware for real-world deployment</li>
-      <li><strong>Sensing:</strong> RGB-D camera for ball detection</li>
+      <li><strong>Sensing:</strong> OptiTRack Cameras for ball detection</li>
     </ul>
   </div>
 
@@ -199,8 +208,8 @@
     <ul>
       <li><strong>Language:</strong> Python 3.9+</li>
       <li><strong>Framework:</strong> PyTorch 2.0, ROS 2 Humble</li>
-      <li><strong>Dependencies:</strong> PyBullet, NumPy, OpenCV</li>
-      <li><strong>Training Hardware:</strong> GPU (NVIDIA RTX 3090)</li>
+      <li><strong>Dependencies:</strong> NumPy, OpenCV</li>
+      <li><strong>Training Hardware:</strong> GPU</li>
       <li><strong>Inference:</strong> ~50ms latency on embedded system</li>
     </ul>
   </div>
@@ -230,7 +239,7 @@
     <li>🔗 <a href="https://github.com/Afshin1997/kuka_rl_ros2" target="_blank">GitHub Repository</a></li>
     <li>📂 <a href="assets/dataset.zip">Download Dataset</a></li>
     <li>📝 <a href="docs/setup_guide.md">Setup Guide</a></li>
-    <li>🎓 <a href="docs/training_guide.md">Training Instructions</a></li>
+    <li>🎓 <a href="https://isaac-sim.github.io/IsaacLab/main/index.html">Training Instructions</a></li>
   </ul>
 </section>
 
