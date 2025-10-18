@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Catch-Throw: Learning to Catch a Thrown Object</title>
-<link rel="stylesheet" href="css/style.css">
 <style>
   body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 0; }
   header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px 20px; text-align: center; }
@@ -28,6 +27,14 @@
   .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
   .team-member { text-align: center; padding: 20px; border-radius: 8px; background: #f9f9f9; }
   .team-member img { width: 150px; height: 150px; border-radius: 50%; margin-bottom: 10px; object-fit: cover; }
+  
+  /* Challenge Section Styles */
+  .challenge-container { margin: 20px 0; }
+  .challenge-item { background: #f0f8ff; border-left: 4px solid #667eea; padding: 20px; margin: 15px 0; border-radius: 5px; }
+  .challenge-item h4 { color: #667eea; margin-top: 0; }
+  .challenge-item .solution { background: white; padding: 15px; margin-top: 10px; border-radius: 3px; border-left: 3px solid #28a745; }
+  .challenge-item .solution strong { color: #28a745; }
+  
   footer { background: #333; color: white; text-align: center; padding: 20px; margin-top: 40px; }
 </style>
 </head>
@@ -120,6 +127,14 @@
         <img src="plots/height_visualization.png" alt="Height Analysis">
         <p>Height Visualization</p>
       </div>
+      <div class="gallery-item">
+        <img src="plots/policy.png" alt="Network Structure">
+        <p>Network Architecture</p>
+      </div>
+       <div class="gallery-item">
+        <img src="plots/Entropy_Coefficient.png" alt="Entropy Boundaries">
+        <p>Network Architecture</p>
+      </div>
     </div>
   </div>
 </section>
@@ -162,6 +177,73 @@
   </table>
 </section>
 
+<!-- Challenges Section -->
+<section>
+  <h2>⚠️ Challenges & Solutions</h2>
+  
+  <div class="challenge-container">
+    <div class="challenge-item">
+      <h4>🎯 Challenge 1: Real-Time Latency</h4>
+      <p>
+        Catching a moving object requires predictions with minimal delay. Initial network inference took 150ms, which was too slow for dynamic object tracking.
+      </p>
+      <div class="solution">
+        <strong>✓ Solution:</strong> Optimized the neural network architecture by reducing layer complexity and implementing inference optimization techniques. Achieved ~50ms latency on embedded systems through quantization and model pruning.
+      </div>
+    </div>
+
+    <div class="challenge-item">
+      <h4>🔄 Challenge 2: Sim-to-Real Transfer Gap</h4>
+      <p>
+        The trained policy in simulation performed well but struggled when deployed on the real KUKA robot due to differences in physics simulation, sensor noise, and actuator dynamics.
+      </p>
+      <div class="solution">
+        <strong>✓ Solution:</strong> Implemented domain randomization during training, including random friction coefficients, object masses, and camera noise. Fine-tuned the policy on real robot data for 500 additional episodes to adapt to real-world conditions.
+      </div>
+    </div>
+
+    <div class="challenge-item">
+      <h4>🎓 Challenge 3: Multi-Task Learning Convergence</h4>
+      <p>
+        Training a single network for five consecutive tasks caused the network to forget earlier tasks (catastrophic forgetting) and struggle with smooth task transitions.
+      </p>
+      <div class="solution">
+        <strong>✓ Solution:</strong> Designed separate but complementary reward functions for each task with smooth transition criteria. Used curriculum learning to progressively introduce task complexity, and employed dynamic entropy coefficients to balance exploration and exploitation across tasks.
+      </div>
+    </div>
+
+    <div class="challenge-item">
+      <h4>⚡ Challenge 4: Ball Tracking and Detection</h4>
+      <p>
+        The OptiTRack system required 10+ calibrated cameras and was sensitive to lighting conditions. Ball tracking sometimes failed when the object moved too fast or encountered occlusions.
+      </p>
+      <div class="solution">
+        <strong>✓ Solution:</strong> Implemented a hybrid approach combining OptiTRack with a learned vision model for trajectory prediction. Added redundancy with multiple detection methods and developed a Kalman filter for robust ball position estimation even during temporary occlusions.
+      </div>
+    </div>
+
+    <div class="challenge-item">
+      <h4>📊 Challenge 5: Reward Shaping Complexity</h4>
+      <p>
+        Finding appropriate reward weights for multiple objectives (catching accuracy, stability, position tracking, etc.) was difficult and required extensive hyperparameter tuning.
+      </p>
+      <div class="solution">
+        <strong>✓ Solution:</strong> Used multi-objective reinforcement learning with automatic reward weight optimization. Implemented a progressive reward scheme where weights shift based on task progress, and conducted systematic ablation studies to understand each component's contribution.
+      </div>
+    </div>
+
+    <div class="challenge-item">
+      <h4>🤖 Challenge 6: Robot Safety and Hardware Constraints</h4>
+      <p>
+        The robot's joint limits, velocity constraints, and safety requirements sometimes conflicted with optimal catching trajectories, and hardware failures could occur during learning.
+      </p>
+      <div class="solution">
+        <strong>✓ Solution:</strong> Built safety constraints directly into the action space by clipping velocities and enforcing joint limits. Trained exclusively in simulation first with realistic constraints, and implemented a kill-switch mechanism with timeout protection for real-world deployment.
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- Technical Details -->
 <section>
   <h2>🔧 Technical Details</h2>
@@ -176,19 +258,10 @@
     <p>We employ deep reinforcement learning with the following components:</p>
     <ul>
       <li><strong>Algorithm:</strong> Proximal Policy Optimization (PPO)</li>
-      <li><strong>Network Architecture:</strong> 1-layer lstm + 4-layer fully connected neural network</li>
-        <div id="images" class="tab-content">
-          <h3>Results & Visualizations</h3>
-          <div class="gallery">
-            <div class="gallery-item">
-              <img src="plots/policy.png" alt="Network Structure">
-              <p>Accuracy Metrics</p>
-            </div>
-          </div>
-        </div>
+      <li><strong>Network Architecture:</strong> 1-layer LSTM + 4-layer fully connected neural network</li>
       <li><strong>State Space:</strong> 44-dimensional (position, velocity, orientation)</li>
       <li><strong>Action Space:</strong> 7-dimensional robot joint velocities</li>
-      <li><strong>Training Time:</strong> ~50,000 episodes for all the tasks</li>
+      <li><strong>Training Time:</strong> ~50,000 episodes for all tasks</li>
     </ul>
   </div>
 
@@ -277,7 +350,6 @@
   <p>Built with 💜 for robotic manipulation research</p>
 </footer>
 
-<script src="js/main.js"></script>
 <script>
   function switchTab(evt, tabName) {
     var i, tabcontent, tabbuttons;
