@@ -508,79 +508,67 @@
     <p>THe reward function of all the stages are provided here. It should be mentioned there is no explicit stage definition for the network, 
       but based on the observation data, the network should learn in whcih stage it is at each time state. Moreover,
        the rewards are defined in such a way to have higher basis reward at each stage more than previous stage to lead the network to have 
-       forward progression in completion of stages.</p>
-    
-    <div class="table-caption">Table 2: Randomization Parameters</div>
-    <table>
-      <tr>
-        <th>Parameter</th>
-        <th>Range</th>
-        <th>Randomization Method</th>
-      </tr>
-      <tr>
-        <td>Static Friction of EE</td>
-        <td>[0.2, 0.4]</td>
-        <td>Absolute, Reset</td>
-      </tr>
-      <tr>
-        <td>Dynamic Friction of EE</td>
-        <td>[0.15, 0.35]</td>
-        <td>Absolute, Reset</td>
-      </tr>
-      <tr>
-        <td>Restitution of End Effector</td>
-        <td>[0.7, 0.9]</td>
-        <td>Absolute, Reset</td>
-      </tr>
-      <tr>
-        <td>Static Friction of Ball</td>
-        <td>[0.2, 0.4]</td>
-        <td>Absolute, Reset</td>
-      </tr>
-      <tr>
-        <td>Dynamic Friction of Ball</td>
-        <td>[0.15, 0.35]</td>
-        <td>Absolute, Reset</td>
-      </tr>
-      <tr>
-        <td>Restitution of Ball</td>
-        <td>[0.7, 0.9]</td>
-        <td>Absolute, Reset</td>
-      </tr>
-      <tr>
-        <td>Mass of Ball</td>
-        <td>[0.8, 1.2]</td>
-        <td>Scaled, Reset</td>
-      </tr>
-      <tr>
-        <td>Link Masses</td>
-        <td>[0.9, 1.1]</td>
-        <td>Scaled</td>
-      </tr>
-      <tr>
-        <td>Gravity</td>
-        <td>[±0.1, ±0.1, ±0.3]</td>
-        <td>Added, Reset</td>
-      </tr>
-      <tr>
-        <td>Initial Joint Positions</td>
-        <td>[-0.06, 0.06]</td>
-        <td>Added, Reset</td>
-      </tr>
-      <tr>
-        <td>Joint Stiffness and Damping</td>
-        <td>[-0.95, 1.05]</td>
-        <td>Scaled, Reset</td>
-      </tr>
-      <tr>
-        <td>Initial Ball Position (X, Y, Z)</td>
-        <td>[±0.3, ±0.25, ±0.2]</td>
-        <td>Added, Reset</td>
-      </tr>
-    </table>
-    
-    <p><strong>Randomization Methods:</strong> <strong>Absolute</strong> sets parameters to random values in the specified range. <strong>Scaled</strong> multiplies base values by the range factor. <strong>Added</strong> adds random noise to default values. <strong>Reset</strong> indicates randomization occurs at episode reset; otherwise parameters remain constant during an episode.</p>
+       forward progression in completion of stages.</p>    
+    <h4>Core Reward Components</h4>
+    <ul>
+      <li><strong>Distance Reward:</strong> Exponential function encouraging the end effector to approach the ball: <code>dist_reward = 1.0 × exp(-1.6 × d)</code></li>
+      <li><strong>Orientation Reward:</strong> Cosine similarity between end effector alignment and ball velocity direction, scaled by 0.4</li>
+      <li><strong>Relative Velocity Reward:</strong> Encourages velocity alignment between end effector and ball using exponential weighting based on distance</li>
+      <li><strong>Stability Reward:</strong> Penalizes ball velocity to maintain stable hovering phases: <code>1.3 / (1.0 + ball_velocity)</code></li>
+      <li><strong>Target Distance Reward:</strong> Guides ball transport to target location with quadratic penalty: <code>1.0 / (1.0 + 5.0 × distance²)</code></li>
+    </ul>
+
+    <h4>Task-Specific Rewards</h4>
+    <p>Rewards are modulated based on the current task phase to smooth transitions:</p>
+    <ul>
+      <li><strong>Catching Phase:</strong> dist_reward = 1.1, stability_reward = 1.1, emphasis on closing the distance</li>
+      <li><strong>Stabilizing Phase:</strong> dist_reward = 1.3, stability_reward = 1.3, focus on damping oscillations</li>
+      <li><strong>Stabilized Phase:</strong> dist_reward = 1.5, dist_to_target = 1.0, prepare for transport</li>
+      <li><strong>Moving to Target:</strong> dist_to_target = 1.0, gravity_compensation = 2.0, emphasize target approach</li>
+      <li><strong>At Target:</strong> dist_reward = 1.6, dist_to_target = 1.2, maximize stability at goal position</li>
+      <li><strong>Throwing Phase:</strong> dist_reward = 1.6, throwing_pos_reward weighted by ball velocity magnitude</li>
+    </ul>
+
+    <h4>Penalty Terms</h4>
+    <ul>
+      <li><strong>Revert Penalty:</strong> Applied when task transitions revert (e.g., dropped ball): <code>-6.0 × velocity_factor</code></li>
+      <li><strong>Joint Acceleration Penalty:</strong> Penalizes jerky movements: <code>sum(joint_acceleration²)</code></li>
+      <li><strong>Joint Jerk Penalty:</strong> Controls smoothness: <code>sum(joint_jerk²)</code></li>
+      <li><strong>Joint Torque Rate Penalty:</strong> Reduces actuator stress: <code>sum(torque_rate²)</code></li>
+      <li><strong>Action Sign Change Penalty:</strong> Encourages smooth action sequences: <code>sum((sign(action_t) - sign(action_t-1))²)</code></li>
+      <li><strong>DOF Limit Penalty:</strong> Applied when joints near limits: 1 point per joint exceeding 97% of range</li>
+      <li><strong>DOF Velocity Limit Penalty:</strong> Penalizes excessive joint velocities</li>
+      <li><strong>Termination Penalty:</strong> Large penalty (5.0) for trajectory boundary violations</li>
+    </ul>
+
+    <h4>Bonus Rewards</h4>
+    <ul>
+      <li><strong>Task Completion Bonus:</strong> 5.0 awarded when transitioning to next task phase (one-time per phase)</li>
+      <li><strong>Finished Episode Bonus:</strong> 400 awarded upon successful episode completion</li>
+      <li><strong>Alive Reward:</strong> 0.3 baseline reward each step, boosted to 2.5 during final phases to encourage reaching conclusion</li>
+      <li><strong>Gravity Compensation:</strong> Rewards end effector orientation aligned upward (preventing drooping)</li>
+    </ul>
+
+    <h4>Curriculum Learning Integration</h4>
+    <p>The reward function incorporates curriculum progress to gradually increase task difficulty:</p>
+    <ul>
+      <li><strong>Bouncing Threshold:</strong> Decreases from 4.0 to 2.0 m/s as training progresses, making task harder</li>
+      <li><strong>Velocity Factor:</strong> Dynamic scaling: <code>1.0 - (1.0 / (1.0 + 0.2 × rel_velocity²))</code> adjusts penalty magnitude</li>
+      <li><strong>Penalty Scaling:</strong> Revert penalties increase with curriculum level to enforce better stability</li>
+    </ul>
+
+    <h4>Logging and Monitoring</h4>
+    <p>All reward components are individually logged for analysis during training, enabling:</p>
+    <ul>
+      <li>Identification of reward imbalances</li>
+      <li>Tracking convergence of each task phase</li>
+      <li>Debugging unexpected policy behavior</li>
+      <li>Visualization of learning progress per component</li>
+    </ul>
+
+    <p><strong>Design Philosophy:</strong> The reward function uses exponential and sigmoid-like functions to create smooth, continuous gradients that guide exploration without sharp discontinuities. Task-specific scaling ensures the agent focuses on the current objective while maintaining progress on fundamental skills like stability and smoothness.</p>
   </div>
+
 
   <div id="filters" class="tab-content">
     <h3>Filters Considered during Implementation</h3>
