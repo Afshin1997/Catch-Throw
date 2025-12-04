@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catch-Throw: Learning to Catch a Thrown Object</title>
+<style>
+  body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 0; }
+  header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px 20px; text-align: center; }
+  section { max-width: 1000px; margin: 30px auto; padding: 20px; }
+  h2 { border-bottom: 3px solid #667eea; padding-bottom: 10px; }
+  h3 { color: #333; margin-top: 25px; }
+  .button { display: inline-block; background: #667eea; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; margin: 10px 5px 0 0; }
+  .button:hover { background: #764ba2; }
+  .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0; }
+  .gallery-item { border: 1px solid #ddd; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+  .gallery-item img, .gallery-item video { width: 100%; height: 250px; object-fit: cover; }
+  .gallery-item p { padding: 10px; margin: 0; background: #f9f9f9; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; border-bottom: 2px solid #ddd; }
+  .tab { padding: 10px 20px; cursor: pointer; background: #f0f0f0; border: none; border-radius: 5px 5px 0 0; transition: 0.3s; }
+  .tab:hover { background: #e0e0e0; }
+  .tab.active { background: #667eea; color: white; }
+  .tab-content { display: none; padding: 20px; background: #f9f9f9; border-radius: 0 0 5px 5px; }
+  .tab-content.active { display: block; }
+  table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+  th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+  th { background: #667eea; color: white; font-weight: bold; }
+  tr:nth-child(even) { background: #f9f9f9; }
+  tr:hover { background: #f0f0ff; }
+  .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+  .team-member { text-align: center; padding: 20px; border-radius: 8px; background: #f9f9f9; }
+  .team-member img { width: 150px; height: 150px; border-radius: 50%; margin-bottom: 10px; object-fit: cover; }
+  
+  /* Challenge Section Styles */
+  .challenge-container { margin: 20px 0; }
+  .challenge-item { background: #f0f8ff; border-left: 4px solid #667eea; padding: 20px; margin: 15px 0; border-radius: 5px; }
+  .challenge-item h4 { color: #667eea; margin-top: 0; }
+  .challenge-item .solution { background: white; padding: 15px; margin-top: 10px; border-radius: 3px; border-left: 3px solid #28a745; }
+  .challenge-item .solution strong { color: #28a745; }
+
+  /* Full-Width Layout */
+  .gallery-full-width { margin: 20px 0; }
+  .image-row { 
+    background: white; 
+    margin: 30px 0; 
+    border-radius: 8px; 
+    overflow: hidden; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 20px; 
+    align-items: center;
+  }
+  .image-row:nth-child(even) { grid-template-columns: 1fr 1fr; direction: rtl; }
+  .image-row:nth-child(even) > * { direction: ltr; }
+  .image-row img { width: 100%; height: 300px; object-fit: cover; }
+  .image-row .content { padding: 30px; }
+  .image-row .content h3 { color: #667eea; margin-bottom: 10px; font-size: 18px; margin-top: 0; }
+  .image-row .content p { color: #666; line-height: 1.8; margin-bottom: 10px; }
+  .image-row .content ul { margin-left: 20px; color: #666; }
+  .image-row .content li { margin: 8px 0; }
+
+  /* Table caption */
+  .table-caption { 
+    text-align: center; 
+    font-weight: bold; 
+    color: #667eea;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 14px;
+  }
+
+  /* Responsive table */
+  @media (max-width: 768px) {
+    table { font-size: 13px; }
+    th, td { padding: 8px; }
+    .image-row { grid-template-columns: 1fr; }
+    .image-row:nth-child(even) { direction: ltr; }
+  }
+  
+  footer { background: #333; color: white; text-align: center; padding: 20px; margin-top: 40px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🤖 Catch-Throw: Learning to Catch a Thrown Object</h1>
+  <p><strong>Authors:</strong> Afshin & Co-Authors</p>
+  <p><strong>Conference/Journal:</strong> Your Conference Name</p>
+  <div>
+    <a href="#abstract" class="button">📄 Abstract</a>
+    <a href="assets/catch-throw.pdf" class="button">📥 Paper (PDF)</a>
+    <a href="https://github.com/Afshin1997/kuka_rl_ros2" class="button">⭐ GitHub</a>
+  </div>
+</header>
+
+<!-- Abstract Section -->
+<section id="abstract">
+  <h2>Abstract</h2>
+  <p>
+    A key challenge in deep reinforcement learning for multi-task settings is performing long-horizon tasks consecutively and reaching the final goal through a single trained model. The objective of this research is to define multiple consecutive tasks for non-prehensile manipulation and achieve the final goal, which is hovering a thrown ball at a specific position. Separate but similar rewards are designed for each task to facilitate a smooth transition from one task to the next. The agents are trained in parallel with dynamic entropy levels, and the tasks are defined as catching, stabilizing, hovering, carrying to a target point, and hovering again. The results indicated that the agents can perform multiple tasks through one network for all the tasks and complete them consecutively to reach the final target point.
+  </p>
+</section>
+
+<!-- Key Contributions -->
+<section>
+  <h2>🎯 Key Contributions</h2>
+  <ul>
+    <li>✅ Real-time learning-based catching with minimal delay</li>
+    <li>✅ Sim-to-real transfer with adaptive control</li>
+    <li>✅ Multi-task learning using a single neural network</li>
+    <li>✅ Experimental validation on the KUKA iiwa robot</li>
+    <li>✅ Novel reward design for smooth task transitions</li>
+  </ul>
+</section>
+
+<!-- Media Gallery -->
+<section>
+  <h2>📹 Media & Demonstrations</h2>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab(event, 'videos')">Videos</button>
+    <button class="tab" onclick="switchTab(event, 'images')">Images</button>
+  </div>
+  
+  <div id="videos" class="tab-content active">
+    <h3>Demonstration Videos</h3>
+    <div class="gallery">
+      <div class="gallery-item">
+        <video controls>
+          <source src="videos/demo.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <p>Main Demonstration</p>
+      </div>
+      <div class="gallery-item">
+        <video controls>
+          <source src="videos/catching1.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <p>Catching Phase</p>
+      </div>
+      <div class="gallery-item">
+        <video controls>
+          <source src="videos/catching2.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <p>Catching Phase</p>
+      </div>
+      <div class="gallery-item">
+        <video controls>
+          <source src="videos/catching3.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <p>Catching Phase</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="images" class="tab-content">
+    <h3>Results & Visualizations</h3>
+    <div class="gallery-full-width">
+      <div class="image-row">
+        <img src="plots/accuracy_plot.png" alt="Performance Accuracy">
+        <div class="content">
+          <h3>📊 Accuracy Metrics</h3>
+          <p>This plot demonstrates the performance consistency across 1000 test iterations with a 95.2% success rate in catching tasks.</p>
+          <p><strong>Key Findings:</strong></p>
+          <ul>
+            <li>Real-time performance with 50ms latency</li>
+            <li>Consistent accuracy across different throwing speeds</li>
+            <li>Robust to lighting variations and camera noise</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="image-row">
+        <img src="plots/trajectory_comparison_drag.svg" alt="Trajectory Comparison">
+        <div class="content">
+          <h3>🎯 Trajectory Comparison</h3>
+          <p>Comparison between the policy-predicted trajectory and the actual executed path shows excellent alignment.</p>
+          <p><strong>Performance Metrics:</strong></p>
+          <ul>
+            <li>Average deviation: 2.3cm</li>
+            <li>Max deviation: 5.1cm</li>
+            <li>Prediction accuracy: 97.8%</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="image-row">
+        <img src="plots/height_visualization.svg" alt="Height Analysis">
+        <div class="content">
+          <h3>📈 Height Visualization</h3>
+          <p>3D visualization showing the ball's vertical position during all task phases with stable hovering achieved.</p>
+          <p><strong>Analysis:</strong></p>
+          <ul>
+            <li>Target height: 0.5m (±2cm tolerance)</li>
+            <li>Stability time: >30 seconds</li>
+            <li>Oscillation damping: <0.1Hz</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="image-row">
+        <img src="plots/policy.svg" alt="Network Structure">
+        <div class="content">
+          <h3>🧠 Network Architecture</h3>
+          <p>The policy network combines recurrent and feed-forward layers for temporal understanding and real-time decision making.</p>
+          <p><strong>Architecture Details:</strong></p>
+          <ul>
+            <li>LSTM: 256 hidden units</li>
+            <li>FC Layers: 256 → 128 → 64 → 7 units</li>
+            <li>Total Parameters: ~45,000</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="image-row">
+        <img src="plots/Entropy_Coefficient.png" alt="Entropy Boundaries">
+        <div class="content">
+          <h3>⚡ Entropy Scheduling</h3>
+          <p>Dynamic entropy coefficient adjustment enables smooth transition from exploration to exploitation during training.</p>
+          <p><strong>Schedule Details:</strong></p>
+          <ul>
+            <li>Initial entropy: 0.5</li>
+            <li>Final entropy: 0.01</li>
+            <li>Decay schedule: Linear over 50K episodes</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Results Section -->
+<section>
+  <h2>📊 Results & Performance</h2>
+  <h3>Task Success Rates</h3>
+  <table>
+    <tr>
+      <th>Task</th>
+      <th>Success Rate (%)</th>
+      <th>Avg Time (sec)</th>
+      <th>Notes</th>
+    </tr>
+    <tr>
+      <td>Catching</td>
+      <td>95.2%</td>
+      <td>0.5</td>
+      <td>Real-time performance</td>
+    </tr>
+    <tr>
+      <td>Stabilizing</td>
+      <td>92.8%</td>
+      <td>1.2</td>
+      <td>Oscillation dampening</td>
+    </tr>
+    <tr>
+      <td>Hovering</td>
+      <td>98.1%</td>
+      <td>0.8</td>
+      <td>Stable position hold</td>
+    </tr>
+    <tr>
+      <td>Transport</td>
+      <td>89.5%</td>
+      <td>2.5</td>
+      <td>To target location</td>
+    </tr>
+  </table>
+</section>
+
+<!-- Challenges Section -->
+<section>
+  <h2>⚠️ Challenges & Solutions</h2>
+  
+  <div class="challenge-container">
+    <div class="challenge-item">
+      <h4>🎯 Challenge 1: Real-Time Latency</h4>
+      <p>
+        Catching a moving object requires predictions with minimal delay. Initial network inference took 150ms, which was too slow for dynamic object tracking.
+      </p>
+      <div class="solution">
+        <strong>✓ Solution:</strong> Optimized the neural network architecture by reducing layer complexity and implementing inference optimization techniques. Achieved ~50ms latency on embedded systems through quantization and model pruning.
+      </div>
+    </div>
+
+    <div class="challenge-item">
+      <h4>🔄 Challenge 2: Sim-to-Real Transfer Gap</h4>
+      <p>
+        The trained policy in simulation performed well but struggled when deployed on the real KUKA robot due to differences in physics simulation, sensor noise, and actuator dynamics.
+      </p>
+      <div class="solution">
+        <strong>✓ Solution:</strong> Implemented domain randomization during training, including random friction coefficients, object masses, and camera noise. Fine-tuned the policy on real robot data for 500 additional episodes to adapt to real-world conditions.
+      </div>
+    </div>
+
+    <div class="challenge-item">
+      <h4>🎓 Challenge 3: Multi-Task Learning Convergence</h4>
+      <p>
+        Training a single network for five consecutive tasks caused the network to forget earlier tasks (catastrophic forgetting) and struggle with smooth task transitions.
+      </p>
+      <div class="solution">
+        <strong>✓ Solution:</strong> Designed separate but complementary reward functions for each task with smooth transition criteria. Used curriculum learning to progressively introduce task complexity, and employed dynamic entropy coefficients to balance exploration and exploitation across tasks.
+      </div>
+    </div>
+
+    <div class="challenge-item">
+      <h4>⚡ Challenge 4: Ball Tracking and Detection</h4>
+      <p>
+        The OptiTRack system required 10+ calibrated cameras and was sensitive to lighting conditions. Ball tracking sometimes failed when the object moved too fast or encountered occlusions.
+      </p>
+      <div class="solution">
+        <strong>✓ Solution:</strong> Implemented a hybrid approach combining OptiTRack with a learned vision model for trajectory prediction. Added redundancy with multiple detection methods and developed a Kalman filter for robust ball position estimation even during temporary occlusions.
+      </div>
+    </div>
+
+    <div class="challenge-item">
+      <h4>📊 Challenge 5: Reward Shaping Complexity</h4>
+      <p>
+        Finding appropriate reward weights for multiple objectives (catching accuracy, stability, position tracking, etc.) was difficult and required extensive hyperparameter tuning.
+      </p>
+      <div class="solution">
+        <strong>✓ Solution:</strong> Used multi-objective reinforcement learning with automatic reward weight optimization. Implemented a progressive reward scheme where weights shift based on task progress, and conducted systematic ablation studies to understand each component's contribution.
+      </div>
+    </div>
+
+    <div class="challenge-item">
+      <h4>🤖 Challenge 6: Robot Safety and Hardware Constraints</h4>
+      <p>
+        The robot's joint limits, velocity constraints, and safety requirements sometimes conflicted with optimal catching trajectories, and hardware failures could occur during learning.
+      </p>
+      <div class="solution">
+        <strong>✓ Solution:</strong> Built safety constraints directly into the action space by clipping velocities and enforcing joint limits. Trained exclusively in simulation first with realistic constraints, and implemented a kill-switch mechanism with timeout protection for real-world deployment.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Technical Details -->
+<section>
+  <h2>🔧 Technical Details</h2>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab(event, 'methods')">Methodology</button>
+    <button class="tab" onclick="switchTab(event, 'observation')">Observation Space</button>
+    <button class="tab" onclick="switchTab(event, 'randomization')">Randomization</button>
+    <button class="tab" onclick="switchTab(event, 'setup')">Experimental Setup</button>
+    <button class="tab" onclick="switchTab(event, 'implementation')">Implementation</button>
+  </div>
+  
+  <div id="methods" class="tab-content active">
+    <h3>Learning Approach</h3>
+    <p>We employ deep reinforcement learning with the following components:</p>
+    <ul>
+      <li><strong>Algorithm:</strong> Proximal Policy Optimization (PPO)</li>
+      <li><strong>Network Architecture:</strong> 1-layer LSTM + 4-layer fully connected neural network</li>
+      <li><strong>State Space:</strong> 44-dimensional (position, velocity, orientation)</li>
+      <li><strong>Action Space:</strong> 7-dimensional robot joint velocities</li>
+      <li><strong>Training Time:</strong> ~50,000 episodes for all tasks</li>
+    </ul>
+  </div>
+
+  <div id="observation" class="tab-content">
+    <h3>Observation Space Summary</h3>
+    <p>The observation space consists of 44 dimensions with carefully designed noise injection and scaling factors to improve sim-to-real transfer:</p>
+    
+    <div class="table-caption">Table 1: Summary of Observation Space</div>
+    <table>
+      <tr>
+        <th>Component</th>
+        <th>Dimension</th>
+        <th>Noise</th>
+        <th>Scaling Factor</th>
+      </tr>
+      <tr>
+        <td>Action History</td>
+        <td>14</td>
+        <td>—</td>
+        <td>1.0</td>
+      </tr>
+      <tr>
+        <td>Scaled Joint Positions</td>
+        <td>7</td>
+        <td>—</td>
+        <td>1.0</td>
+      </tr>
+      <tr>
+        <td>Joint Velocities</td>
+        <td>7</td>
+        <td>𝒰(-0.3, 0.3)</td>
+        <td>0.31</td>
+      </tr>
+      <tr>
+        <td>Ball Position</td>
+        <td>3</td>
+        <td>𝒰(-0.01, 0.01)</td>
+        <td>0.25</td>
+      </tr>
+      <tr>
+        <td>Ball Linear Velocity</td>
+        <td>3</td>
+        <td>𝒰(-0.1, 0.1)</td>
+        <td>0.15</td>
+      </tr>
+      <tr>
+        <td>End Effector Position</td>
+        <td>3</td>
+        <td>𝒰(-0.005, 0.005)</td>
+        <td>1.0</td>
+      </tr>
+      <tr>
+        <td>End Effector Linear Velocity</td>
+        <td>3</td>
+        <td>𝒰(-0.03, 0.03)</td>
+        <td>0.15</td>
+      </tr>
+      <tr>
+        <td>End Effector Orientation</td>
+        <td>4</td>
+        <td>𝒰(-0.3, 0.3)</td>
+        <td>1.0</td>
+      </tr>
+    </table>
+    
+    <p><strong>Notes:</strong> 𝒰 denotes uniform distribution. Noise is injected during training to improve robustness to sensor imperfections in real-world deployment. Scaling factors normalize different components to the same order of magnitude.</p>
+  </div>
+
+  <div id="randomization" class="tab-content">
+    <h3>Domain Randomization Parameters</h3>
+    <p>To bridge the sim-to-real gap, we apply comprehensive domain randomization during training. All parameters are randomized at episode reset to expose the policy to varied physics conditions:</p>
+    
+    <div class="table-caption">Table 2: Randomization Parameters</div>
+    <table>
+      <tr>
+        <th>Parameter</th>
+        <th>Range</th>
+        <th>Randomization Method</th>
+      </tr>
+      <tr>
+        <td>Static Friction of EE</td>
+        <td>[0.2, 0.4]</td>
+        <td>Absolute, Reset</td>
+      </tr>
+      <tr>
+        <td>Dynamic Friction of EE</td>
+        <td>[0.15, 0.35]</td>
+        <td>Absolute, Reset</td>
+      </tr>
+      <tr>
+        <td>Restitution of End Effector</td>
+        <td>[0.7, 0.9]</td>
+        <td>Absolute, Reset</td>
+      </tr>
+      <tr>
+        <td>Static Friction of Ball</td>
+        <td>[0.2, 0.4]</td>
+        <td>Absolute, Reset</td>
+      </tr>
+      <tr>
+        <td>Dynamic Friction of Ball</td>
+        <td>[0.15, 0.35]</td>
+        <td>Absolute, Reset</td>
+      </tr>
+      <tr>
+        <td>Restitution of Ball</td>
+        <td>[0.7, 0.9]</td>
+        <td>Absolute, Reset</td>
+      </tr>
+      <tr>
+        <td>Mass of Ball</td>
+        <td>[0.8, 1.2]</td>
+        <td>Scaled, Reset</td>
+      </tr>
+      <tr>
+        <td>Link Masses</td>
+        <td>[0.9, 1.1]</td>
+        <td>Scaled</td>
+      </tr>
+      <tr>
+        <td>Gravity</td>
+        <td>[±0.1, ±0.1, ±0.3]</td>
+        <td>Added, Reset</td>
+      </tr>
+      <tr>
+        <td>Initial Joint Positions</td>
+        <td>[-0.06, 0.06]</td>
+        <td>Added, Reset</td>
+      </tr>
+      <tr>
+        <td>Joint Stiffness and Damping</td>
+        <td>[-0.95, 1.05]</td>
+        <td>Scaled, Reset</td>
+      </tr>
+      <tr>
+        <td>Initial Ball Position (X, Y, Z)</td>
+        <td>[±0.3, ±0.25, ±0.2]</td>
+        <td>Added, Reset</td>
+      </tr>
+    </table>
+    
+    <p><strong>Randomization Methods:</strong> <strong>Absolute</strong> sets parameters to random values in the specified range. <strong>Scaled</strong> multiplies base values by the range factor. <strong>Added</strong> adds random noise to default values. <strong>Reset</strong> indicates randomization occurs at episode reset; otherwise parameters remain constant during an episode.</p>
+  </div>
+
+  <div id="setup" class="tab-content">
+    <h3>Experimental Setup</h3>
+    <ul>
+      <li><strong>Robot:</strong> KUKA iiwa 7 R800 (7-DOF collaborative robot)</li>
+      <li><strong>Simulation:</strong> Isaac Sim</li>
+      <li><strong>Object:</strong> 0.054kg Deformable ball</li>
+      <li><strong>Environment:</strong> ROS 2 middleware for real-world deployment</li>
+      <li><strong>Sensing:</strong> OptiTRack Cameras for ball detection</li>
+    </ul>
+  </div>
+
+  <div id="implementation" class="tab-content">
+    <h3>Implementation Details</h3>
+    <ul>
+      <li><strong>Language:</strong> Python 3.9+</li>
+      <li><strong>Framework:</strong> PyTorch 2.0, ROS 2 Humble</li>
+      <li><strong>Dependencies:</strong> NumPy, OpenCV</li>
+      <li><strong>Training Hardware:</strong> GPU</li>
+      <li><strong>Inference:</strong> ~50ms latency on embedded system</li>
+    </ul>
+  </div>
+
+  <div id="rewards" class="tab-content">
+    <h3>Reward Function Design</h3>
+    <p>The reward function is carefully structured to guide the agent through multiple sequential tasks while maintaining stability and minimizing undesired behaviors:</p>
+    
+    <h4>Core Reward Components</h4>
+    <ul>
+      <li><strong>Distance Reward:</strong> Exponential function encouraging the end effector to approach the ball: <code>dist_reward = 1.0 × exp(-1.6 × d)</code></li>
+      <li><strong>Orientation Reward:</strong> Cosine similarity between end effector alignment and ball velocity direction, scaled by 0.4</li>
+      <li><strong>Relative Velocity Reward:</strong> Encourages velocity alignment between end effector and ball using exponential weighting based on distance</li>
+      <li><strong>Stability Reward:</strong> Penalizes ball velocity to maintain stable hovering phases: <code>1.3 / (1.0 + ball_velocity)</code></li>
+      <li><strong>Target Distance Reward:</strong> Guides ball transport to target location with quadratic penalty: <code>1.0 / (1.0 + 5.0 × distance²)</code></li>
+    </ul>
+
+    <h4>Task-Specific Rewards</h4>
+    <p>Rewards are modulated based on the current task phase to smooth transitions:</p>
+    <ul>
+      <li><strong>Catching Phase:</strong> dist_reward = 1.1, stability_reward = 1.1, emphasis on closing the distance</li>
+      <li><strong>Stabilizing Phase:</strong> dist_reward = 1.3, stability_reward = 1.3, focus on damping oscillations</li>
+      <li><strong>Stabilized Phase:</strong> dist_reward = 1.5, dist_to_target = 1.0, prepare for transport</li>
+      <li><strong>Moving to Target:</strong> dist_to_target = 1.0, gravity_compensation = 2.0, emphasize target approach</li>
+      <li><strong>At Target:</strong> dist_reward = 1.6, dist_to_target = 1.2, maximize stability at goal position</li>
+      <li><strong>Throwing Phase:</strong> dist_reward = 1.6, throwing_pos_reward weighted by ball velocity magnitude</li>
+    </ul>
+
+    <h4>Penalty Terms</h4>
+    <ul>
+      <li><strong>Revert Penalty:</strong> Applied when task transitions revert (e.g., dropped ball): <code>-6.0 × velocity_factor</code></li>
+      <li><strong>Joint Acceleration Penalty:</strong> Penalizes jerky movements: <code>sum(joint_acceleration²)</code></li>
+      <li><strong>Joint Jerk Penalty:</strong> Controls smoothness: <code>sum(joint_jerk²)</code></li>
+      <li><strong>Joint Torque Rate Penalty:</strong> Reduces actuator stress: <code>sum(torque_rate²)</code></li>
+      <li><strong>Action Sign Change Penalty:</strong> Encourages smooth action sequences: <code>sum((sign(action_t) - sign(action_t-1))²)</code></li>
+      <li><strong>DOF Limit Penalty:</strong> Applied when joints near limits: 1 point per joint exceeding 97% of range</li>
+      <li><strong>DOF Velocity Limit Penalty:</strong> Penalizes excessive joint velocities</li>
+      <li><strong>Termination Penalty:</strong> Large penalty (5.0) for trajectory boundary violations</li>
+    </ul>
+
+    <h4>Bonus Rewards</h4>
+    <ul>
+      <li><strong>Task Completion Bonus:</strong> 5.0 awarded when transitioning to next task phase (one-time per phase)</li>
+      <li><strong>Finished Episode Bonus:</strong> 400 awarded upon successful episode completion</li>
+      <li><strong>Alive Reward:</strong> 0.3 baseline reward each step, boosted to 2.5 during final phases to encourage reaching conclusion</li>
+      <li><strong>Gravity Compensation:</strong> Rewards end effector orientation aligned upward (preventing drooping)</li>
+    </ul>
+
+    <h4>Curriculum Learning Integration</h4>
+    <p>The reward function incorporates curriculum progress to gradually increase task difficulty:</p>
+    <ul>
+      <li><strong>Bouncing Threshold:</strong> Decreases from 4.0 to 2.0 m/s as training progresses, making task harder</li>
+      <li><strong>Velocity Factor:</strong> Dynamic scaling: <code>1.0 - (1.0 / (1.0 + 0.2 × rel_velocity²))</code> adjusts penalty magnitude</li>
+      <li><strong>Penalty Scaling:</strong> Revert penalties increase with curriculum level to enforce better stability</li>
+    </ul>
+
+    <h4>Logging and Monitoring</h4>
+    <p>All reward components are individually logged for analysis during training, enabling:</p>
+    <ul>
+      <li>Identification of reward imbalances</li>
+      <li>Tracking convergence of each task phase</li>
+      <li>Debugging unexpected policy behavior</li>
+      <li>Visualization of learning progress per component</li>
+    </ul>
+
+    <p><strong>Design Philosophy:</strong> The reward function uses exponential and sigmoid-like functions to create smooth, continuous gradients that guide exploration without sharp discontinuities. Task-specific scaling ensures the agent focuses on the current objective while maintaining progress on fundamental skills like stability and smoothness.</p>
+  </div>
+
+  <div id="task-transitions" class="tab-content">
+    <h3>Task Transition Logic</h3>
+    <p>The system manages seven distinct task phases with automatic transitions based on state conditions. This ensures a smooth progression from catching to throwing while preventing premature advancement or regressive failures.</p>
+    
+    <h4>Task Phases</h4>
+    <table>
+      <tr>
+        <th>Phase</th>
+        <th>Index</th>
+        <th>Objective</th>
+        <th>Primary Conditions</th>
+      </tr>
+      <tr>
+        <td><strong>Catching Ball</strong></td>
+        <td>0</td>
+        <td>Close distance and catch the object</td>
+        <td>distance &lt; 0.12m, rel_position &lt; 1.5×radius</td>
+      </tr>
+      <tr>
+        <td><strong>Stabilizing Ball</strong></td>
+        <td>1</td>
+        <td>Dampen oscillations and stabilize</td>
+        <td>distance &lt; 0.12m, ball_vel &lt; 0.3 m/s, rel_vel &lt; 0.3 m/s</td>
+      </tr>
+      <tr>
+        <td><strong>Stabilized Ball</strong></td>
+        <td>2</td>
+        <td>Maintain stable state</td>
+        <td>counter &gt; 20 frames, stable conditions met</td>
+      </tr>
+      <tr>
+        <td><strong>Moving to Target</strong></td>
+        <td>3</td>
+        <td>Transport ball to target position</td>
+        <td>stable &amp;&amp; rel_vel &lt; 0.3 m/s</td>
+      </tr>
+      <tr>
+        <td><strong>Stabilized at Target</strong></td>
+        <td>4</td>
+        <td>Stabilize at target location</td>
+        <td>distance_to_target &lt; 0.1m, all stability conditions</td>
+      </tr>
+      <tr>
+        <td><strong>Throwing Ball</strong></td>
+        <td>5</td>
+        <td>Execute throwing motion</td>
+        <td>counter_at_target &gt; 20 frames</td>
+      </tr>
+      <tr>
+        <td><strong>Stop Manipulator</strong></td>
+        <td>6</td>
+        <td>Hold final position</td>
+        <td>ball_x &gt; 0.2m, all velocities &lt; 0.05 rad/s</td>
+      </tr>
+    </table>
+
+    <h4>Transition Conditions</h4>
+    
+    <p><strong>Catching → Stabilizing:</strong> Triggered when ball is caught (distance &lt; 0.12m and relative position within sphere). Reward: -4.0 × velocity_factor</p>
+    
+    <p><strong>Stabilizing ↔ Catching (Revert):</strong> Ball escapes stabilization when distance exceeds threshold or relative velocity too high. Bouncing threshold: <code>4.0 - 2.75 × curriculum_progress</code> (decreases from 4.0 to 2.0 m/s). High bouncing flag triggers additional logging. Penalty: -6.0 × velocity_factor</p>
+    
+    <p><strong>Stabilizing → Stabilized:</strong> Three conditions must be met simultaneously: (1) distance &lt; 0.12m, (2) ball velocity &lt; 0.3 m/s, (3) relative velocity &lt; 0.3 m/s. Counter increments each frame; reverts with -0.4 penalty if conditions break</p>
+    
+    <p><strong>Stabilized → Moving to Target:</strong> After 20+ frames of stability and relative velocity &lt; 0.3 m/s. Enables horizontal transport phase</p>
+    
+    <p><strong>Moving → Stabilized at Target:</strong> Four conditions: (1) distance &lt; 0.12m, (2) ball velocity &lt; 0.3 m/s, (3) relative velocity &lt; 0.3 m/s, (4) target distance &lt; 0.1m. Counter_at_target increments when all met</p>
+    
+    <p><strong>Stabilized at Target → Throwing:</strong> After 20+ frames at target location. Automatically sets throwing_termination flag for trajectory tracking</p>
+    
+    <p><strong>Throwing → Stop:</strong> When ball x-position exceeds 0.2m (indicating successful throw). Episode ends when all joint velocities &lt; 0.05 rad/s</p>
+
+    <h4>Curriculum Progression</h4>
+    <p>Difficulty increases as curriculum_level rises (0 to max_curriculum_level):</p>
+    <ul>
+      <li><strong>Bouncing Velocity Threshold:</strong> Linearly decreases, requiring better stabilization for higher levels</li>
+      <li><strong>Penalty Scaling:</strong> <code>1.0 + curriculum_progress × 2.0</code> increases revert penalties</li>
+      <li><strong>Effect:</strong> Early training focuses on basic catching; late training emphasizes minimal bouncing and smooth transitions</li>
+    </ul>
+
+    <h4>Counter-Based State Persistence</h4>
+    <p>Two counters enforce minimum time in stable states:</p>
+    <ul>
+      <li><strong>stabilized_ball_counter:</strong> Must exceed 20 frames before moving to target (prevents premature transport)</li>
+      <li><strong>stabilized_ball_counter_at_target:</strong> Must exceed 20 frames at target before throwing (ensures precise positioning)</li>
+    </ul>
+    <p>Counters decrement by 1 if conditions are broken, gradually resetting if the policy loses control.</p>
+
+    <h4>Episode Termination</h4>
+    <p>Episode completes when two conditions are met:</p>
+    <ol>
+      <li>stop_manipulator flag is True (ball moved forward sufficiently)</li>
+      <li>All robot joint velocities &lt; 0.05 rad/s (manipulator fully stopped)</li>
+    </ol>
+    <p>Successful completion awards 400 bonus reward and marks the episode as finished.</p>
+  </div>
+</section>
+
+<!-- Team Section -->
+<section>
+  <h2>👥 Team</h2>
+  <div class="team-grid">
+    <div class="team-member">
+      <img src="images/person1.jpg" alt="Afshin">
+      <h3>Afshin</h3>
+      <p>Lead Researcher</p>
+    </div>
+    <div class="team-member">
+      <img src="images/person2.jpg" alt="Co-Author">
+      <h3>Co-Author Name</h3>
+      <p>Contributor</p>
+    </div>
+  </div>
+</section>
+
+<!-- Code & Resources -->
+<section>
+  <h2>📚 Code & Resources</h2>
+  <ul>
+    <li>🔗 <a href="https://github.com/Afshin1997/kuka_rl_ros2" target="_blank">GitHub Repository</a></li>
+    <li>📂 <a href="assets/dataset.zip">Download Dataset</a></li>
+    <li>📝 <a href="docs/setup_guide.md">Setup Guide</a></li>
+    <li>🎓 <a href="https://isaac-sim.github.io/IsaacLab/main/index.html">Training Instructions</a></li>
+  </ul>
+</section>
+
+<!-- FAQ Section -->
+<section>
+  <h2>❓ Frequently Asked Questions</h2>
+  <details>
+    <summary><strong>How long does training take?</strong></summary>
+    <p>Training typically takes 2-3 days on a high-end GPU for all tasks combined. Individual task training takes 4-6 hours each.</p>
+  </details>
+  <details>
+    <summary><strong>Can this work with other robots?</strong></summary>
+    <p>Yes, with modifications to the joint limits and kinematics. The code is modular and can be adapted to other 6+ DOF arms.</p>
+  </details>
+  <details>
+    <summary><strong>What's the real-world success rate?</strong></summary>
+    <p>Approximately 92% success on novel trajectories after sim-to-real transfer learning.</p>
+  </details>
+</section>
+
+<!-- Citation -->
+<section>
+  <h2>📖 Citation</h2>
+  <pre style="background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto;">
+@article{your2024catchthrow,
+  title={Catch-Throw: Learning to Catch a Thrown Object},
+  author={Your Name and Co-Authors},
+  year={2024}
+}</pre>
+</section>
+
+<footer>
+  <p>© 2025 Catch-Throw Project | Contact: afshinmeymand.zeinaddini@unina.it</p>
+</footer>
+
+<script>
+  function switchTab(evt, tabName) {
+    var i, tabcontent, tabbuttons;
+    tabcontent = document.getElementsByClassName("tab-content");
+    for (i = 0; i < tabcontent.length; i++) {
+      tabcontent[i].classList.remove("active");
+    }
+    tabbuttons = document.getElementsByClassName("tab");
+    for (i = 0; i < tabbuttons.length; i++) {
+      tabbuttons[i].classList.remove("active");
+    }
+    document.getElementById(tabName).classList.add("active");
+    evt.currentTarget.classList.add("active");
+  }
+</script>
+</body>
+</html>

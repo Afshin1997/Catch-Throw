@@ -84,8 +84,8 @@
 <body>
 <header>
   <h1>🤖 Catch-Throw: Learning to Catch a Thrown Object</h1>
-  <p><strong>Authors:</strong> Afshin & Co-Authors</p>
-  <p><strong>Conference/Journal:</strong> Your Conference Name</p>
+  <!-- <p><strong>Authors:</strong> Afshin & Co-Authors</p> -->
+  <!-- <p><strong>Conference/Journal:</strong> Your Conference Name</p> -->
   <div>
     <a href="#abstract" class="button">📄 Abstract</a>
     <a href="assets/catch-throw.pdf" class="button">📥 Paper (PDF)</a>
@@ -103,13 +103,13 @@
 
 <!-- Key Contributions -->
 <section>
-  <h2>🎯 Key Contributions</h2>
+  <h2>🎯 Contributions</h2>
   <ul>
     <li>✅ Learning-based catching with non-prehensile manipulation</li>
     <li>✅ Sim-to-real transfer</li>
     <li>✅ Multi-task learning using a single neural network</li>
     <li>✅ Experimental validation on the KUKA iiwa robot</li>
-    <li>✅ Novel reward design for smooth task transitions</li>
+    <li>✅ Reward design for smooth task transitions</li>
   </ul>
 </section>
 
@@ -158,30 +158,26 @@
   <div id="images" class="tab-content">
     <h3>Results & Visualizations</h3>
     <div class="gallery-full-width">
-      <div class="image-row">
-        <img src="plots/accuracy_plot.png" alt="Performance Accuracy">
-        <div class="content">
-          <h3>📊 Accuracy Metrics</h3>
-          <p>This plot demonstrates the performance consistency across 1000 test iterations with a 95.2% success rate in catching tasks.</p>
-          <p><strong>Key Findings:</strong></p>
-          <ul>
-            <li>Real-time performance with 50ms latency</li>
-            <li>Consistent accuracy across different throwing speeds</li>
-            <li>Robust to lighting variations and camera noise</li>
-          </ul>
-        </div>
-      </div>
 
       <div class="image-row">
         <img src="plots/trajectory_comparison_drag.svg" alt="Trajectory Comparison">
         <div class="content">
-          <h3>🎯 Trajectory Comparison</h3>
-          <p>Comparison between the policy-predicted trajectory and the actual executed path shows excellent alignment.</p>
-          <p><strong>Performance Metrics:</strong></p>
+          <h3>📈 Drag Coefficient Identification</h3>
+          <p>This identification process derives the Drag Coefficient Parameter of the Ball based on the Ball Mass, Ball Diameter, Air Temperature, Altitude from sea level, and the recorded trajectories from real-world scenarios</p>
+          <p><strong>For each Trajectory:</strong></p>
           <ul>
-            <li>Average deviation: 2.3cm</li>
-            <li>Max deviation: 5.1cm</li>
-            <li>Prediction accuracy: 97.8%</li>
+            <li>Simulates ballistic motion with air drag using ODE solver</li>
+            <li>Optimizes drag coefficient (Cd) by minimizing position errors</li>
+            <li>Uses Levenberg-Marquardt or differential evolution algorithms</li>
+            <li>Calculates RMSE (Root Mean Square Error) for each fit</li>
+          </ul>
+          <p>And the following data are provided and generated through this optimization process</p>
+          <ul>
+            <li>Ball Mass: 0.052 Kg</li>
+            <li>Ball Diameter: 0.062 Meter</li>
+            <li>Air Density: 1.1839 kg/m^3</li>
+            <li>Gravity: 9.81 m/s^2</li>
+            <li>Drag Coefficient: 0.443 +- 0.2</li>
           </ul>
         </div>
       </div>
@@ -189,41 +185,44 @@
       <div class="image-row">
         <img src="plots/height_visualization.svg" alt="Height Analysis">
         <div class="content">
-          <h3>📈 Height Visualization</h3>
-          <p>3D visualization showing the ball's vertical position during all task phases with stable hovering achieved.</p>
+          <h3>📈 Restitution Coefficient Identification</h3>
+          <p>This identification process analysis the position data from drop tests and calculates the restitution coefficient (e), which measures the "bounciness" of a ball. The coefficient is calculated using the formula:</p>
+          <p>e = √(h_rebound / h_drop)</p>
+          <p>where h_drop is the initial drop height and h_rebound is the rebound height.</p>
           <p><strong>Analysis:</strong></p>
+          <p>This identification is done for 10 trajectories and the following results are derived:</p>
           <ul>
-            <li>Target height: 0.5m (±2cm tolerance)</li>
-            <li>Stability time: >30 seconds</li>
-            <li>Oscillation damping: <0.1Hz</li>
+            <li>Average Restitution Coefficient: 0.561</li>
+            <li>Standard Deviation: 0.13</li>
           </ul>
         </div>
       </div>
 
       <div class="image-row">
-        <img src="plots/policy.svg" alt="Network Structure">
+        <img src="plots/Networks_structure.drawio.svg" alt="Actor Network Structure" style="height: 400px; width: 400px;">
         <div class="content">
           <h3>🧠 Network Architecture</h3>
           <p>The policy network combines recurrent and feed-forward layers for temporal understanding and real-time decision making.</p>
           <p><strong>Architecture Details:</strong></p>
           <ul>
-            <li>LSTM: 256 hidden units</li>
-            <li>FC Layers: 256 → 128 → 64 → 7 units</li>
-            <li>Total Parameters: ~45,000</li>
+            <li>Actor Network: FC Layers: 44 → 256 → 128 → 64 → 7 units</li>
+            <li>Critic Network: FC Layers: 44 → 256 → 128 → 64 → 7 units</li>
+            <li>Normalizers embedded in the hidden layers of the Actor Network</li>
+            <li>Soft Sign function is considered as the activation function of the last layer of Actor Network</li>
           </ul>
         </div>
       </div>
 
       <div class="image-row">
-        <img src="plots/Entropy_Coefficient.png" alt="Entropy Boundaries">
+        <img src="plots/Entropy_Coefficient.svg" alt="Entropy Boundaries">
         <div class="content">
           <h3>⚡ Entropy Scheduling</h3>
           <p>Dynamic entropy coefficient adjustment enables smooth transition from exploration to exploitation during training.</p>
           <p><strong>Schedule Details:</strong></p>
           <ul>
-            <li>Initial entropy: 0.5</li>
-            <li>Final entropy: 0.01</li>
-            <li>Decay schedule: Linear over 50K episodes</li>
+            <li>Initial entropy: 0.01</li>
+            <li>Final entropy: 0.002 - 0.004</li>
+            <li>Decay schedule: Linear over 10K episodes</li>
           </ul>
         </div>
       </div>
@@ -231,109 +230,349 @@
   </div>
 </section>
 
-<!-- Results Section -->
-<section>
-  <h2>📊 Results & Performance</h2>
-  <h3>Task Success Rates</h3>
-  <table>
-    <tr>
-      <th>Task</th>
-      <th>Success Rate (%)</th>
-      <th>Avg Time (sec)</th>
-      <th>Notes</th>
-    </tr>
-    <tr>
-      <td>Catching</td>
-      <td>95.2%</td>
-      <td>0.5</td>
-      <td>Real-time performance</td>
-    </tr>
-    <tr>
-      <td>Stabilizing</td>
-      <td>92.8%</td>
-      <td>1.2</td>
-      <td>Oscillation dampening</td>
-    </tr>
-    <tr>
-      <td>Hovering</td>
-      <td>98.1%</td>
-      <td>0.8</td>
-      <td>Stable position hold</td>
-    </tr>
-    <tr>
-      <td>Transport</td>
-      <td>89.5%</td>
-      <td>2.5</td>
-      <td>To target location</td>
-    </tr>
-  </table>
-</section>
+<!-- Trained Models Section -->
+<section id="models">
+  <h2>🧠 Trained Models</h2>
+  <p>
+    This section showcases the different models trained throughout the development of the Catch-Throw system. 
+    Each model focuses on specific phases of the task, with videos, images, and descriptions explaining their performance.
+  </p>
 
-<!-- Challenges Section -->
-<section>
-  <h2>⚠️ Challenges & Solutions</h2>
-  
-  <div class="challenge-container">
-    <div class="challenge-item">
-      <h4>🎯 Challenge 1: Real-Time Latency</h4>
-      <p>
-        Catching a moving object requires predictions with minimal delay. Initial network inference took 150ms, which was too slow for dynamic object tracking.
-      </p>
-      <div class="solution">
-        <strong>✓ Solution:</strong> Optimized the neural network architecture by reducing layer complexity and implementing inference optimization techniques. Achieved ~50ms latency on embedded systems through quantization and model pruning.
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab(event, 'noisyactor_noisycritic')">Fully Noisy Observation</button>
+    <button class="tab" onclick="switchTab(event, 'integrated_rnn_network')">Integrated RNN and MLP </button>
+    <button class="tab" onclick="switchTab(event, 'noisyactor_perfectcritic')">Noisy Actor Observation</button>
+    <button class="tab" onclick="switchTab(event, 'norm_actor_net')">Normalization on Actor Network</button>
+    <button class="tab" onclick="switchTab(event, 'adjustable_entropy')">Adjustable Entropy Coefficient</button>
+    <button class="tab" onclick="switchTab(event, 'drag_coeff')">Simulation of Drag Forces in Training</button>
+
+  </div>
+
+  <!-- Fully Noisy Observation -->
+  <div id="noisyactor_noisycritic" class="tab-content active">
+    <h3>Noisy Observation for Actor and Critic</h3>
+    <div class="image-row">
+      <img src="plots/actor_critic_noisy.png" alt="Catching Model Visualization">
+      <div class="content">
+        <h3>Overview</h3>
+        <p>
+          Since the PPO algorithm includes two separate networks called the Actor and Critic Networks, they can be fed with different information about the environment and its states. More specifically, the Critic Network is fed with more information than the Actor one, but in practice for real hardware implementation, only the Actor network is used.
+        </p>
+        <p>
+          In this trained model, the Actor and Critic Networks are fed with the same level of noise, but the Critic Network is fed with more information about the environment and the state the agent is in.
+        </p>
+        
+        <h4>Key Features:</h4>
+        <ul>
+          <li>This structure is mostly used in common PPO algorithms</li>
+          <li>Normalizers are embedded in the hidden layers of Actor Network</li>
+        </ul>
+        
+        <h4>Noise Parameters:</h4>
+        <ul>
+          <li>Joint Velocities += <em>U</em>~[−0.03, 0.03] rad/s</li>
+          <li>Ball Position += <em>U</em>~[−0.01, 0.01] meter</li>
+          <li>Ball Velocity += <em>U</em>~[−0.1, 0.1] meter/sec</li>
+          <li>End Effector Position += <em>U</em>~[−0.005, 0.005] meter</li>
+          <li>End Effector Velocity += <em>U</em>~[−0.003, 0.003] meter/sec</li>
+        </ul>
       </div>
     </div>
 
-    <div class="challenge-item">
-      <h4>🔄 Challenge 2: Sim-to-Real Transfer Gap</h4>
-      <p>
-        The trained policy in simulation performed well but struggled when deployed on the real KUKA robot due to differences in physics simulation, sensor noise, and actuator dynamics.
-      </p>
-      <div class="solution">
-        <strong>✓ Solution:</strong> Implemented domain randomization during training, including random friction coefficients, object masses, and camera noise. Fine-tuned the policy on real robot data for 500 additional episodes to adapt to real-world conditions.
+
+  </div>
+
+  <!-- Integrated RNN and MLP -->
+  <div id="integrated_rnn_network" class="tab-content">
+    <h3>Integrated RNN Network with MLP Actor-Critics</h3>
+    <div class="image-row">
+      <img src="plots/actor_critic_rnn_noisy.png" alt="Catching Model Visualization">
+      <div class="content">
+        <h3>Overview</h3>
+        <p>
+          In this model, the network architecture incorporates recurrent layers that provide the agent with memory 
+          capabilities. Specifically, separate LSTM layers are placed before the Actor and Critic networks, 
+          enabling each to maintain its own temporal memory of past observations and experiences.
+          
+          The RNN layer maintains a hidden state vector that is updated at every timestep, creating a compressed 
+          representation of the agent's interaction history. When new observations arrive, the RNN processes them 
+          in the context of this historical memory, producing feature representations that capture both current 
+          information and relevant temporal patterns. These memory-enhanced features are then fed into the 
+          feedforward Actor and Critic MLPs for action selection and value estimation.
+          
+          The recurrent connections (self-loops) in each RNN cell enable information to persist across timesteps, 
+          with gating mechanisms (in LSTM) controlling what information to retain, update, or forget. This 
+          memory mechanism is particularly valuable in robotics applications where velocity estimation, dynamic 
+          adaptation, or multi-step coordination requires understanding of temporal context beyond instantaneous 
+          observations.
+        <ul>
+          <li>All the other parameters are like Fully Noisy Observation</li>
+        </ul>
       </div>
     </div>
 
-    <div class="challenge-item">
-      <h4>🎓 Challenge 3: Multi-Task Learning Convergence</h4>
-      <p>
-        Training a single network for five consecutive tasks caused the network to forget earlier tasks (catastrophic forgetting) and struggle with smooth task transitions.
-      </p>
-      <div class="solution">
-        <strong>✓ Solution:</strong> Designed separate but complementary reward functions for each task with smooth transition criteria. Used curriculum learning to progressively introduce task complexity, and employed dynamic entropy coefficients to balance exploration and exploitation across tasks.
+  </div>
+
+  <!-- Noisy Actor Observation -->
+  <div id="noisyactor_perfectcritic" class="tab-content">
+    <h3>Noisy Actor Observation but Perfect Critic Observation</h3>
+    <div class="image-row">
+      <img src="plots/actor_noisy_perfect_critic.png" alt="Noisy Actor but Perfect Critic Model">
+      <div class="content">
+        <h3>Overview</h3>
+        <p>
+          For the sake of curiosity, the Actor network is fed with noisy data, while the Critic network is trained based on perfect and accurate data at each timestep.
+        </p>
       </div>
     </div>
 
-    <div class="challenge-item">
-      <h4>⚡ Challenge 4: Ball Tracking and Detection</h4>
-      <p>
-        The OptiTRack system required 10+ calibrated cameras and was sensitive to lighting conditions. Ball tracking sometimes failed when the object moved too fast or encountered occlusions.
-      </p>
-      <div class="solution">
-        <strong>✓ Solution:</strong> Implemented a hybrid approach combining OptiTRack with a learned vision model for trajectory prediction. Added redundancy with multiple detection methods and developed a Kalman filter for robust ball position estimation even during temporary occlusions.
-      </div>
     </div>
+  </div>
 
-    <div class="challenge-item">
-      <h4>📊 Challenge 5: Reward Shaping Complexity</h4>
-      <p>
-        Finding appropriate reward weights for multiple objectives (catching accuracy, stability, position tracking, etc.) was difficult and required extensive hyperparameter tuning.
-      </p>
-      <div class="solution">
-        <strong>✓ Solution:</strong> Used multi-objective reinforcement learning with automatic reward weight optimization. Implemented a progressive reward scheme where weights shift based on task progress, and conducted systematic ablation studies to understand each component's contribution.
-      </div>
-    </div>
-
-    <div class="challenge-item">
-      <h4>🤖 Challenge 6: Robot Safety and Hardware Constraints</h4>
-      <p>
-        The robot's joint limits, velocity constraints, and safety requirements sometimes conflicted with optimal catching trajectories, and hardware failures could occur during learning.
-      </p>
-      <div class="solution">
-        <strong>✓ Solution:</strong> Built safety constraints directly into the action space by clipping velocities and enforcing joint limits. Trained exclusively in simulation first with realistic constraints, and implemented a kill-switch mechanism with timeout protection for real-world deployment.
+  <!-- Normalization on Actor Network -->
+  <div id="norm_actor_net" class="tab-content">
+    <h3>Perform Normalization in the hidden layers of the Actor Network</h3>
+    <div class="image-row">
+      <img src="plots/actor_normalization.png" alt="Actor Hidden Layer Normalization">
+      <div class="content">
+        <h3>Overview</h3>
+        <p>
+          In this network structure, just the normalization layer in the hidden layers of the actor network is eliminated to investigate the perfrmance of the trained model.
+        </p>
       </div>
     </div>
   </div>
+
+  <!-- Adjustable Entropy Coefficient -->
+  <div id="adjustable_entropy" class="tab-content">
+    <h3>Full Multi-Task Model</h3>
+    <div class="image-row">
+      <img src="plots/Entropy_Coefficient.svg" alt="Adjustable Entropy Coefficient">
+      <div class="content">
+        <h3>Overview</h3>
+        <p>
+          In this model, the entropy coefficient, which is a key element of the PPO algorithm, is planned to always be in two scheduled ranges. The range narrows down as training progresses, and after 10,000 iterations it oscillates within that range based on the action noise standard deviation.
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Simulation of Drag Forces in Training -->
+  <div id="drag_coeff" class="tab-content">
+    <h3> Simulation of Drag Forces in Training</h3>
+    <div class="image-row">
+      <img src="plots/trajectory_comparison_drag.svg" alt="Drag Coefficient Simulation">
+      <div class="content">
+        <h3>Overview</h3>
+        <p>
+          Drag forces are simulated in this trained model, based on parameters derived from real-world data collection. Experiments revealed that the ball's trajectory does not follow complete projectile motion, but is highly dependent on the ball's velocity and how it is wrapped with detectable tape.
+        </p>
+      </div>
+    </div>
+
+</section>
+
+<!-- Trained Models Section -->
+<section id="contributions">
+  <h2>🧠 Contributions</h2>
+  <p>
+    In this sectio the contributions are discussed.
+  </p>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab(event, 'Adjustable_Entropy')">Bounded Entropy Value</button>
+    <button class="tab" onclick="switchTab(event, 'bounded_commands')">Bounded Commands</button>
+    <button class="tab" onclick="switchTab(event, 'Continual_incresing_reward')">Continual Incresing Reward</button>
+  </div>
+
+  <!--  -->
+  <div id="Adjustable_Entropy" class="tab-content active">
+    <h3>🎯 Bounded Network Outputs</h3>
+    <div class="image-row">
+      <img src="plots/Entropy_Coefficient.svg" alt="Catching Model Visualization">
+      <div class="content">
+        <h3>Overview</h3>
+        <p>
+          The entropy scheduler strategy provides the agent with bounds for maximum and minimum entropy at each step. If the variance of the action distribution decreases, the entropy value decreases, and while the variance of the action distribution increases, the entropy increases to encourage the agent toward higher exploration.
+        </p>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="bounded_commands" class="tab-content">
+    <h3>Bounded Network Outputs</h3>
+    <div class="image-row">
+      <img src="plots/softsign.svg" alt="Soft Sign Activation Function">
+      <div class="content">
+        <h3>Overview</h3>
+        <p>
+          Applying an activation function on the output of the network leads to have safer joint commands throughout the real world scenario implementation. More specifically this approaches is helpful in relative position commands rather than absolute positions commands.
+        </p>
+  
+      </div>
+    </div>
+  </div>
+
+  <div id="Continual_incresing_reward" class="tab-content">
+    <h3>Continual Incresing Reward</h3>
+    <div class="image-row">
+      <img src="plots/continual_reward.svg" alt="Continual Incresing Reward">
+      <div class="content">
+        <h3>Overview</h3>
+        <p>
+          All the models are trained with a single network without explicit definition of sub-tasks in the observation state. More accurately, an innovation that is applied here is about feeding the networks with all the required data for specifying the sub-tasks, and forcing a single network (without any task differentiation like embeddings or one-hot encoders) to be trained based on those observations for all subtasks.
+        </p>
+        <p>
+          In other words, while <em>Task<sub>t</sub> = f(observation)</em>, we decided this <em>f</em> function be learnt by the network itself. However, it should be noticed that the rewards should be defined in an increasing pattern from stage to stage to encourage the agent to move forward toward the final sub-tasks.
+        </p>
+        <p>
+          Naturally, there are some challenges in this approach like catastrophic forgetting, but it is considered as future work to mitigate this issue for longer horizon tasks.
+        </p>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- Safety Section Section -->
+<section id="safety">
+  <h2>🧠 Safety Consideration</h2>
+  <p>
+    In this section, the safety functions considered in both simulation and hardware side are discussed. 
+  </p>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab(event, 'bounded_commands_safety')">Bounded Commands</button>
+    <button class="tab" onclick="switchTab(event, 'limited_workspace')"> Restriced Workspace</button>
+    <button class="tab" onclick="switchTab(event, 'joint_limits')"> Imposed Joint Limits</button>
+
+  </div>
+
+  <!-- Bounded Actions -->
+  <div id="bounded_commands_safety" class="tab-content active">
+    <h3>Bounded Network Outputs</h3>
+    <div class="image-row">
+      <img src="plots/softsign.svg" alt="Bounded Network Output">
+      <div class="content">
+        <h3>Overview</h3>
+        <p>
+          To avoid sending commands that exceed the feasible performance of the manipulator, a maximum fixed step size is defined so that at each time step, the joints can only rotate by a certain amount. For this specific manipulator, the maximum step size is considered to be 0.1 rad.
+          It should be mentioned that this strategy only works when feeding joint commands as relative positions. When the joints are commanded using absolute joint positions, the safety is reduced.
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="limited_workspace" class="tab-content">
+    <h3>Impose limitation on the workspace</h3>
+    <div class="image-row">
+      <img src="plots/ee_workspace.png" alt="Restriced Workspace">
+      <div class="content">
+        <h3>Overview</h3>
+        <p>
+          By limiting the end effector workspace, when the end effector reaches the boundaries of that workspace, the manipulator is stopped suddenly. This unpredictable behavior is expected due to two deficiencies:
+          1- the ball is not thrown within the workspace of the manipulator, and in that case, by definition of the bounding box, the manipulator is stopped;
+          2- throughout the implementation and mitigation of sim-to-real challenges, in some cases the manipulator moved unpredictably due to various observation imperfections such as highly noisy data, which caused the manipulator to reach outside of that box. However, by definition of that box, the strange behaviors are limited to a high extent.        </p>
+
+      </div>
+    </div>
+  </div>
+
+  <div id="joint_limits" class="tab-content">
+    <h3>Applied Joint Limitation</h3>
+    <div class="image-row">
+      <img src="plots/joint_limits.png" alt="Joint Limitation">
+      <div class="content">
+        <h3>Overview</h3>
+        <p>
+          Applying position and velocity joint limitations in both training and deployment enhances safety and prevents damage to the manipulator in real-world scenarios. This leads to avoiding high acceleration and jerky performance in real-world scenarios, and as soon as a single joint reaches its limit, the manipulator is stopped.
+        </p>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- Identification Section -->
+<section id="Identification">
+  <h2>Parameter Identification</h2>
+  <p>
+    In this section, the Ientification approaches are discussed to find a more accurate range for unknown parameters is training models.
+  </p>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab(event, 'restitution_coefficient')">Restitution Coefficient</button>
+    <button class="tab" onclick="switchTab(event, 'drag_coefficient')"> Drag Coefficient</button>
+    <button class="tab" onclick="switchTab(event, 'initial_ball_pos_vel')"> Initial Ball Position and Velocity</button>
+
+  </div>
+
+  <!-- Restitution -->
+  <div id="restitution_coefficient" class="tab-content active">
+    <h3>Restitution Coefficient Identification</h3>
+    <div class="image-row">
+      <img src="plots/height_visualization.svg" alt="Restitution Coefficient Identification">
+      <div class="content">
+        <h3>Overview</h3>
+          <p>This identification process analysis the position data from drop tests and calculates the restitution coefficient (e), which measures the "bounciness" of a ball. The coefficient is calculated using the formula:</p>
+          <p>e = √(h_rebound / h_drop)</p>
+          <p>where h_drop is the initial drop height and h_rebound is the rebound height.</p>
+          <p><strong>Analysis:</strong></p>
+          <p>This identification is done for 10 trajectories and the following results are derived:</p>
+        
+      </div>
+    </div>
+  </div>
+
+  <!-- Drag Coefficient -->
+  <div id="drag_coefficient" class="tab-content">
+    <h3>Drag Coefficient Identification</h3>
+    <div class="image-row">
+      <img src="plots/trajectory_comparison_drag.svg" alt="Drag Coefficient Identification">
+      <div class="content">
+        <h3>Overview</h3>
+          <p>This identification process derives the DRag Coefficient Parameter of the Ball based on the Ball Mass, Ball Diameter, Air Temperature, Altitude from sea level, and the recorded trajectories from real-world scenarios</p>
+          <p><strong>For each Trajectory:</strong></p>
+          <ul>
+            <li>Simulates ballistic motion with air drag using ODE solver</li>
+            <li>Optimizes drag coefficient (Cd) by minimizing position errors</li>
+            <li>Uses Levenberg-Marquardt or differential evolution algorithms</li>
+            <li>Calculates RMSE (Root Mean Square Error) for each fit</li>
+          </ul>
+          <p>And the following data are provided and generated through this optimization process</p>
+          <ul>
+            <li>Ball Mass: 0.052 Kg</li>
+            <li>Ball Diameter: 0.062 Meter</li>
+            <li>Air Density: 1.1839 kg/m^3</li>
+            <li>Gravity: 9.81 m/s^2</li>
+            <li>Drag Coefficient: 0.443 +- 0.2</li>
+          </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- INitial Ball Position and Velocity -->
+  <div id="initial_ball_pos_vel" class="tab-content">
+    <h3>Initial Ball Position and Velocity Identification</h3>
+    <p>
+          In this identification process, random trajectories are recorded using an OptiTrack camera system to determine the ranges of initial ball positions and velocities for normal throwing trajectories. Based on these real-world observations, the simulation generates initial positions and velocities within the identified ranges to define the ball's initial state and mimic realistic projectile motion. As discussed in the drag forces simulation section, drag force is applied to the ball throughout its trajectory.
+      </p>
+    
+    <div class="gallery">
+      <div class="gallery-item">
+        <img src="plots/ball_pos.png">
+        <p>Trajectory</p>
+      </div>
+      <div class="gallery-item">
+        <img src="plots/ball_vel.png">
+        <p>Initial Velocity</p>
+      </div>
+    </div>
+  </div>
+
 </section>
 
 <!-- Technical Details -->
@@ -351,14 +590,14 @@
   
   <div id="methods" class="tab-content active">
     <h3>Learning Approach</h3>
-    <p>We employ deep reinforcement learning with the following components:</p>
+    <p>We employed deep reinforcement learning with the following components:</p>
     <ul>
       <li><strong>Algorithm:</strong> Proximal Policy Optimization (PPO)</li>
-      <li><strong>Network Architecture:</strong> 1-layer LSTM + 4-layer fully connected neural network</li>
+      <li><strong>Network Architecture:</strong> 3-layer fully connected neural network</li>
       <li><strong>Actor Network State Space:</strong> 44-dimensional</li>
       <li><strong>Critic Network State Space:</strong> 102-dimensional</li>
       <li><strong>Action Space:</strong> 7-dimensional robot joint velocities</li>
-      <li><strong>Training Time:</strong> ~50,000 episodes for all tasks</li>
+      <li><strong>Training Time:</strong> ~20,000 episodes for all tasks</li>
     </ul>
   </div>
 
@@ -440,32 +679,32 @@
       </tr>
       <tr>
         <td>Static Friction of EE</td>
-        <td>[0.2, 0.4]</td>
+        <td>[0.7, 1.3]</td>
         <td>Absolute, Reset</td>
       </tr>
       <tr>
         <td>Dynamic Friction of EE</td>
-        <td>[0.15, 0.35]</td>
+        <td>[0.7, 1.3]</td>
         <td>Absolute, Reset</td>
       </tr>
       <tr>
         <td>Restitution of End Effector</td>
-        <td>[0.7, 0.9]</td>
+        <td>[0.55, 0.7]</td>
         <td>Absolute, Reset</td>
       </tr>
       <tr>
         <td>Static Friction of Ball</td>
-        <td>[0.2, 0.4]</td>
+        <td>[0.7, 1.3]</td>
         <td>Absolute, Reset</td>
       </tr>
       <tr>
         <td>Dynamic Friction of Ball</td>
-        <td>[0.15, 0.35]</td>
+        <td>[0.7, 1.3]</td>
         <td>Absolute, Reset</td>
       </tr>
       <tr>
         <td>Restitution of Ball</td>
-        <td>[0.7, 0.9]</td>
+        <td>[0.55, 1.3]</td>
         <td>Absolute, Reset</td>
       </tr>
       <tr>
@@ -476,11 +715,11 @@
       <tr>
         <td>Link Masses</td>
         <td>[0.9, 1.1]</td>
-        <td>Scaled</td>
+        <td>Scaled, Reset</td>
       </tr>
       <tr>
         <td>Gravity</td>
-        <td>[±0.1, ±0.1, ±0.3]</td>
+        <td>[0.0, 0.0, ±0.3]</td>
         <td>Added, Reset</td>
       </tr>
       <tr>
@@ -495,7 +734,12 @@
       </tr>
       <tr>
         <td>Initial Ball Position (X, Y, Z)</td>
-        <td>[±0.3, ±0.25, ±0.2]</td>
+        <td>[[+2.7, +3.3], [-0.7, 0.2], [0.05, 0.45]]</td>
+        <td>Added, Reset</td>
+      </tr>
+      <tr>
+        <td>Initial Ball Spin (Roll, Pitch, Yaw)</td>
+        <td>[±0.2, ±0.2, ±0.2]</td>
         <td>Added, Reset</td>
       </tr>
     </table>
@@ -608,7 +852,6 @@
       </tr>
     </table>
     
-    <p><strong>Randomization Methods:</strong> <strong>Absolute</strong> sets parameters to random values in the specified range. <strong>Scaled</strong> multiplies base values by the range factor. <strong>Added</strong> adds random noise to default values. <strong>Reset</strong> indicates randomization occurs at episode reset; otherwise parameters remain constant during an episode.</p>
   </div>
 
   <div id="setup" class="tab-content">
@@ -629,13 +872,113 @@
       <li><strong>Framework:</strong> PyTorch 2.0, ROS 2 Humble</li>
       <li><strong>Dependencies:</strong> NumPy, OpenCV</li>
       <li><strong>Training Hardware:</strong> GPU</li>
-      <li><strong>Inference:</strong> ~50ms latency on embedded system</li>
+      <li><strong>Inference:</strong> ~30ms latency on embedded system</li>
     </ul>
   </div>
 </section>
 
-<!-- Team Section -->
+<!-- Results Section -->
 <section>
+  <h2>📊 Results & Performance</h2>
+  <h3>Task Success Rates</h3>
+  <table>
+    <tr>
+      <th>Model</th>
+      <th>Success Rate (%)</th>
+      <th>Avg Time (sec)</th>
+      <th>Notes</th>
+    </tr>
+    <tr>
+      <td>Fully Noisy Observation</td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Integrated RNN and MPL</td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Noisy Actor Observation</td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Normalization on Actor Network</td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Adjustable Entropy Coefficient</td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Simulation of Drag Forces</td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+  </table>
+</section>
+
+<!-- Challenges Section -->
+<section>
+  <h2>⚠️ Challenges & Solutions</h2>
+  
+  <div class="challenge-container">
+
+    <div class="challenge-item">
+      <h4>🔄 Challenge 1: Sim-to-Real Transfer Gap</h4>
+      <p>
+        The trained policy in simulation performed well but struggled when deployed on the real KUKA robot due to differences in physics simulation, sensor noise, and actuator dynamics.
+      </p>
+      <div class="solution">
+        <strong>✓ Solution:</strong> Implemented domain randomization during training, including random friction coefficients, object masses, and camera noise.
+      </div>
+    </div>
+
+    <div class="challenge-item">
+      <h4>🎓 Challenge 2: Multi-Task Learning Convergence</h4>
+      <p>
+        Training a single network for seven consecutive tasks caused the network to forget earlier tasks (catastrophic forgetting) and struggle with smooth task transitions.
+      </p>
+      <div class="solution">
+        <strong>✓ Solution:</strong> Designed separate but complementary reward functions for each task with smooth transition criteria. Employed dynamic entropy coefficients to balance exploration and exploitation across tasks.
+      </div>
+    </div>
+
+    <div class="challenge-item">
+      <h4>⚡ Challenge 3: Ball Tracking and Detection</h4>
+      <p>
+        The OptiTRack system required 10+ calibrated cameras and was sensitive to lighting conditions. Ball tracking sometimes failed when the object moved too fast or encountered occlusions.
+      </p>
+      <div class="solution">
+        <strong>✓ Solution:</strong> Applying Savitzky Golay and Moving Average filters for ball tracking and joint velocities estimation.
+      </div>
+    </div>
+
+
+    <div class="challenge-item">
+      <h4>🤖 Challenge 4: Robot Safety and Hardware Constraints</h4>
+      <p>
+        The robot's joint limits, velocity constraints, and safety requirements sometimes conflicted with optimal catching trajectories, and hardware failures could occur during learning.
+      </p>
+      <div class="solution">
+        <strong>✓ Solution:</strong> Built safety constraints directly into the action space by clipping commanded target positions and enforcing joint limits. Trained exclusively in simulation with realistic constraints.
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Team Section -->
+<!-- <section>
   <h2>👥 Team</h2>
   <div class="team-grid">
     <div class="team-member">
@@ -649,7 +992,7 @@
       <p>Contributor</p>
     </div>
   </div>
-</section>
+</section> -->
 
 <!-- Code & Resources -->
 <section>
@@ -657,13 +1000,13 @@
   <ul>
     <li>🔗 <a href="https://github.com/Afshin1997/kuka_rl_ros2" target="_blank">GitHub Repository</a></li>
     <!-- <li>📂 <a href="assets/dataset.zip">Download Dataset</a></li> -->
-    <li>📝 <a href="docs/setup_guide.md">Setup Guide</a></li>
+    <!-- <li>📝 <a href="docs/setup_guide.md">Setup Guide</a></li> -->
     <li>🎓 <a href="https://isaac-sim.github.io/IsaacLab/main/index.html">Training Instructions</a></li>
   </ul>
 </section>
 
 <!-- FAQ Section -->
-<section>
+<!-- <section>
   <h2>❓ Frequently Asked Questions</h2>
   <details>
     <summary><strong>How long does training take?</strong></summary>
@@ -677,10 +1020,10 @@
     <summary><strong>What's the real-world success rate?</strong></summary>
     <p>Approximately 92% success on novel trajectories after sim-to-real transfer learning.</p>
   </details>
-</section>
+</section> -->
 
 <!-- Citation -->
-<section>
+<!-- <section>
   <h2>📖 Citation</h2>
   <pre style="background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto;">
 @article{your2024catchthrow,
@@ -688,7 +1031,7 @@
   author={Your Name and Co-Authors},
   year={2024}
 }</pre>
-</section>
+</section> -->
 
 <footer>
   <p>© 2025 Catch-Throw Project | Contact: afshinmeymand.zeinaddini@unina.it</p>
