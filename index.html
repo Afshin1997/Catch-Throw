@@ -51,6 +51,32 @@
     gap: 20px; 
     align-items: center;
   }
+  .results-figure {
+    margin: 2rem 0;
+  }
+  
+  .svg-container {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+  
+  .result-svg {
+    width: 45%;
+    min-width: 300px;
+    height: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  
+  .figure-caption {
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.6;
+    text-align: justify;
+  }
   .image-row:nth-child(even) { grid-template-columns: 1fr 1fr; direction: rtl; }
   .image-row:nth-child(even) > * { direction: ltr; }
   .image-row img { width: 100%; height: 300px; object-fit: cover; }
@@ -880,51 +906,21 @@
 <!-- Results Section -->
 <section>
   <h2>📊 Results & Performance</h2>
-  <h3>Task Success Rates</h3>
-  <table>
-    <tr>
-      <th>Model</th>
-      <th>Success Rate (%)</th>
-      <th>Avg Time (sec)</th>
-      <th>Notes</th>
-    </tr>
-    <tr>
-      <td>Fully Noisy Observation</td>
-      <td></td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>Integrated RNN and MPL</td>
-      <td></td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>Noisy Actor Observation</td>
-      <td>80</td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>Normalization on Actor Network</td>
-      <td></td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>Adjustable Entropy Coefficient</td>
-      <td></td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>Simulation of Drag Forces</td>
-      <td></td>
-      <td></td>
-      <td></td>
-    </tr>
-  </table>
+  
+  <div class="results-figure">
+    <div class="svg-container">
+      <img src="plots/Episode_finished_reward.svg" alt="Finished reward comparison" class="result-svg">
+      <img src="plots/Train_mean_reward2.svg" alt="Mean training reward comparison" class="result-svg">
+    </div>
+    
+    <p class="figure-caption">
+      <strong>Ablation study on ballistic motion modeling and entropy strategies.</strong> 
+      (a) Finished reward comparing four training conditions:ballistic equations with dynamic entropy (dark blue), ballistic equations with fixed entropy (orange), no ballistic equations with dynamic entropy (red), and ballistic equations with LSTM architecture (light blue). (b) Mean training reward for the same conditions. 
+      Incorporating ballistic motion equations significantly improves task completion rates, while dynamic 
+      entropy outperforms fixed entropy. Adding LSTM layers prevents successful learning, suggesting the 
+      recurrent architecture introduces unnecessary complexity for this task structure.
+    </p>
+  </div>
 </section>
 
 <!-- Challenges Section -->
@@ -998,10 +994,10 @@
 <section>
   <h2>📚 Code & Resources</h2>
   <ul>
-    <li>🔗 <a href="https://github.com/Afshin1997/kuka_rl_ros2" target="_blank">GitHub Repository</a></li>
+    <li>🔗 <a href="https://github.com/Afshin1997/kuka_rl_ros2" target="_blank">Inference Instruction</a></li>
     <!-- <li>📂 <a href="assets/dataset.zip">Download Dataset</a></li> -->
     <!-- <li>📝 <a href="docs/setup_guide.md">Setup Guide</a></li> -->
-    <li>🎓 <a href="https://isaac-sim.github.io/IsaacLab/main/index.html">Training Instructions</a></li>
+    <li>🎓 <a href="https://github.com/Afshin1997/Lbr_iiwa_rl_ros2.git">Training Instructions</a></li>
   </ul>
 </section>
 
